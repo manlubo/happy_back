@@ -1,4 +1,7 @@
 spring:
+  config:
+    import:
+      - optional:classpath:secret/dev/redis.yml
   jpa:
     hibernate:
       ddl-auto: update
