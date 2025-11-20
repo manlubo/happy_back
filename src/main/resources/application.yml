@@ -7,3 +7,4 @@ spring:
     import:
       - optional:classpath:secret/db.yml
       - optional:classpath:secret/mongo.yml
+      - optional:classpath:secret/jwt.yml
