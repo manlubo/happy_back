@@ -31,6 +31,4 @@ public class MemberSignupRequest {
   @NotBlank(message = "주소는 필수 입력 값입니다.")
   private String address;
 
-  @NotBlank(message = "이메일 인증 토큰이 필요합니다.")
-  private String emailVerificationToken;
 }

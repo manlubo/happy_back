@@ -1,0 +1,75 @@
+package com.gitbaby.happy_back.domain.member.service;
+
+import com.gitbaby.happy_back.domain.common.util.RedisUtil;
+import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
+import com.gitbaby.happy_back.domain.member.exception.EmailMismatchException;
+import com.gitbaby.happy_back.domain.member.exception.InvalidEmailTokenException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+@Service
+@Log4j2
+@RequiredArgsConstructor
+public class AuthServiceImpl implements AuthService {
+  private final MemberService memberService;
+  private final PasswordEncoder passwordEncoder;
+  private final RedisUtil redisUtil;
+
+  private static final String EMAIL_VERIFICATION_PREFIX =  "EMAIL_VERIFICATION:";
+
+  // 이메일 인증용 키 생성
+  private String getEmailKey(String emailVerificationToken) {
+    return EMAIL_VERIFICATION_PREFIX + emailVerificationToken;
+  }
+
+  // 이메일 인증 생성
+  private String createEmailVerification(String email) {
+    String emailVerificationToken = UUID.randomUUID().toString();
+    redisUtil.set(getEmailKey(emailVerificationToken), email, 30L, TimeUnit.MINUTES);
+
+    return emailVerificationToken;
+  }
+
+  // 이메일 인증 키 확인
+  private boolean hasEmailVerification(String emailVerificationToken) {
+    return redisUtil.hasKey(getEmailKey(emailVerificationToken));
+  }
+
+  // 이메일 인증 값 검증
+  private String readEmailVerification(String emailVerificationToken) {
+    return redisUtil.get(getEmailKey(emailVerificationToken));
+  }
+
+  // 이메일 인증 삭제
+  private boolean deleteEmailVerification(String emailVerificationToken) {
+    return redisUtil.delete(getEmailKey(emailVerificationToken));
+  }
+
+
+  // 회원가입 - 일반회원
+  @Override
+  public Long userSignup(MemberSignupRequest memberSignupRequest, String emailVerificationToken) {
+
+    // 메일인증 토큰 없을 때
+    if(emailVerificationToken == null){
+      throw new InvalidEmailTokenException();
+    }
+
+    // 인증한 이메일과, 입력된 이메일이 다를 때
+    if(readEmailVerification(emailVerificationToken).equals(memberSignupRequest.getEmail())) {
+      throw new EmailMismatchException();
+    }
+
+    memberSignupRequest.setPassword(passwordEncoder.encode(memberSignupRequest.getPassword()));
+    Long memberId = memberService.userSignUp(memberSignupRequest);
+
+    deleteEmailVerification(memberSignupRequest.getEmail());
+
+    return memberId;
+  }
+}
