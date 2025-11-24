@@ -24,7 +24,7 @@ public class AuthServiceImpl implements AuthService {
   private final RedisUtil redisUtil;
   private final MailService mailService;
 
-  private static final String EMAIL_VERIFICATION_PREFIX =  "EMAIL_VERIFICATION:";
+  private static final String EMAIL_VERIFICATION_PREFIX =  "EMAIL_VERIFICATION_TOKEN:";
 
   // 이메일 인증용 키 생성
   private String getEmailKey(String emailVerificationToken) {
