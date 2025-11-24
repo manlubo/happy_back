@@ -78,7 +78,7 @@ public class MailService {
   private String buildButton(String text, String url) {
     return "<a href=\"" + url + "\" "
       + "style=\"display:inline-block; width:100%; max-width:360px; text-align:center;"
-      + " padding:12px 0; background-color:##2563eb; color:#ffffff; text-decoration:none;"
+      + " padding:12px 0; background-color:#2563eb; color:#ffffff; text-decoration:none;"
       + " border-radius:8px; font-size:14px; font-weight:bold;\">"
       + text
       + "</a>";

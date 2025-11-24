@@ -4,6 +4,7 @@ import com.gitbaby.happy_back.domain.common.service.MailService;
 import com.gitbaby.happy_back.domain.common.util.RedisUtil;
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupEmailRequest;
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
+import com.gitbaby.happy_back.domain.member.exception.EmailAlreadyExistsException;
 import com.gitbaby.happy_back.domain.member.exception.EmailMismatchException;
 import com.gitbaby.happy_back.domain.member.exception.EmailVerificationExpiredException;
 import com.gitbaby.happy_back.domain.member.exception.InvalidEmailTokenException;
@@ -54,16 +55,22 @@ public class AuthServiceImpl implements AuthService {
     return redisUtil.delete(getEmailKey(emailVerificationToken));
   }
 
+  // 회원가입 전 인증 메일 전송
   @Override
   public boolean signUpEmailVerification(MemberSignupEmailRequest memberSignupEmailRequest) {
+    // 이미 가입된 이메일일 때
+    if(memberService.hasEmail(memberSignupEmailRequest.getEmail())){
+      throw new EmailAlreadyExistsException();
+    }
+
     String emailVerificationToken = createEmailVerification(memberSignupEmailRequest.getEmail());
     mailService.signupEmailVerification(memberSignupEmailRequest.getEmail(), emailVerificationToken, memberSignupEmailRequest.getRole());
     return hasEmailVerification(emailVerificationToken);
   }
 
-  // 회원가입 - 일반회원
+  // 회원가입 - 인증처리
   @Override
-  public Long userSignup(MemberSignupRequest memberSignupRequest, String emailVerificationToken) {
+  public Long signup(MemberSignupRequest memberSignupRequest, String emailVerificationToken) {
 
     // 메일인증 토큰 없을 때
     if(emailVerificationToken == null){
@@ -81,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     memberSignupRequest.setPassword(passwordEncoder.encode(memberSignupRequest.getPassword()));
-    Long memberId = memberService.userSignUp(memberSignupRequest);
+    Long memberId = memberService.signUp(memberSignupRequest);
 
     deleteEmailVerification(emailVerificationToken);
 
