@@ -1,23 +1,18 @@
 package com.gitbaby.happy_back.security.util;
 
-import com.gitbaby.happy_back.security.dto.MemberAuthDTO;
+import com.gitbaby.happy_back.domain.member.en.MemberStatus;
+import com.gitbaby.happy_back.domain.member.en.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class JwtUtil {
@@ -32,35 +27,39 @@ public class JwtUtil {
   @Value("${jwt.refresh-expiration-days}")
   private long expireDays;
 
-  public String generateToken(Map<String, Object> claims, String subject, long expireSeconds) {
+  //  JWT 토큰 생성
+  private String generateToken(Map<String, Object> claims, String subject, long expireSeconds) {
     Instant now = Instant.now();
+    Date issuedAt = Date.from(now);
+    Date expiredAt = Date.from(now.plusSeconds(expireSeconds));
 
     return Jwts.builder()
       .claims(claims)
       .subject(subject)
-      .issuedAt(Date.from(now))
-      .expiration(Date.from(now.plusSeconds(expireSeconds)))
+      .issuedAt(issuedAt)
+      .expiration(expiredAt)
       .signWith(key)
       .compact();
   }
 
-  public String generateAccessToken(MemberAuthDTO member) { // 짧은 시간
+  // 엑세스 토큰 생성
+  public String createAccessToken(Long memberId, MemberStatus status, HashSet<Role> roles) {
     long expireSeconds = expireMinutes * 60;
 
     Map<String, Object> claims = new HashMap<>();
-    claims.put("status", member.getStatus());
-    claims.put("roles", member.getRoles());
+    claims.put("status", status);
+    claims.put("roles", roles);
 
-    return generateToken(claims, String.valueOf(member.getId()), expireSeconds);
+    return generateToken(claims, memberId.toString(), expireSeconds);
   }
 
-  // RefreshToken은 멤버 pk 가지고 있음.
-  public String generateRefreshToken(MemberAuthDTO member) { // 긴 시간
+  // 리프레시 토큰 생성
+  public String createRefreshToken(Long memberId) {
     long expireSeconds = expireDays * 24 * 60 * 60;
-    return generateToken(Collections.emptyMap(), String.valueOf(member.getId()), expireSeconds);
+    return generateToken(Collections.emptyMap(), memberId.toString(), expireSeconds);
   }
 
-
+  // Jwt 토큰값 파싱
   public Claims getClaims(String token) {
     return Jwts.parser()
       .verifyWith(key)
@@ -69,35 +68,29 @@ public class JwtUtil {
       .getPayload();
   }
 
-  public String resolveToken(HttpServletRequest request) { // 토큰 파싱
-    String bearerToken = request.getHeader("Authorization");
-    if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-      return bearerToken.substring(7);
-    }
-    return null;
-  }
-
-  public boolean isValidToken(String token) {
+  // 토큰 유효성 검증
+  public Long getTokenTTL(String token) {
     try {
-      Jwts.parser()
+      Claims claims = Jwts.parser()
         .verifyWith(key)
         .build()
-        .parseSignedClaims(token);
-      return true;
+        .parseSignedClaims(token)
+        .getPayload();
+
+      // 남은 시간 계산
+      long exp = claims.getExpiration().getTime();
+      long now = System.currentTimeMillis();
+      long ttl = exp - now;
+
+      // 음수면 0으로 처리
+      return ttl > 0 ? ttl : 0L;
+
     } catch (ExpiredJwtException e) {
-      // 토큰 만료됨
-      return false;
+      // 만료되었을 때
+      return 0L;
     } catch (JwtException | IllegalArgumentException e) {
-      // 잘못된 서명 or 다른 문제
-      return false;
+      // 토큰 위조/구조 문제
+      return null;
     }
-  }
-
-
-  public LocalDateTime ttlToLocalDateTime(long ttlMillis) {
-    return LocalDateTime.ofInstant(
-      Instant.ofEpochMilli(System.currentTimeMillis() + ttlMillis),
-      ZoneId.systemDefault()
-    );
   }
 }

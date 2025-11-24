@@ -32,8 +32,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                   FilterChain filterChain)
     throws ServletException, IOException {
 
-
-    String accessToken = jwtUtil.resolveToken(request);
+    String bearerToken = getBearerToken(request);
+    String accessToken = resolveAccessToken(bearerToken);
 
     if (accessToken == null) {
       filterChain.doFilter(request, response);
@@ -83,5 +83,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     );
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
+  }
+
+  // 헤더에서 엑세스토큰 가져오기
+  private String getBearerToken(HttpServletRequest request) {
+    return request.getHeader("Authorization");
+  }
+
+  // 헤더에서 엑세스토큰 값 파싱
+  private String resolveAccessToken(String bearerToken) {
+    if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+      return bearerToken.substring(7);
+    }
+    return null;
   }
 }
