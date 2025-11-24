@@ -21,16 +21,16 @@ class AuthServiceTest {
   @Test
   @DisplayName("회원가입 메일전송 테스트")
   void signUpEmailVerification() {
-    MemberSignupEmailRequest memberSignupEmailRequest = new MemberSignupEmailRequest("manlubo11@gmail.com", Role.USER);
+    MemberSignupEmailRequest memberSignupEmailRequest = new MemberSignupEmailRequest("manlubo11@gmail.com", Role.ORG);
     log.info(authService.signUpEmailVerification(memberSignupEmailRequest));
 
   }
 
   @Test
   @Transactional
-  @DisplayName("일반회원 회원가입 테스트")
+  @DisplayName("회원가입 테스트")
   void userSignup() {
-    MemberSignupRequest memberSignupRequest = new MemberSignupRequest("manlubo11@gmail.com", "12345678", "전상현", "010-6687-8628", "서울특별시 금천구 독산동");
-    log.info(authService.userSignup(memberSignupRequest, "7b8ce1fe-5c47-4e51-875d-96b52539fefe"));
+    MemberSignupRequest memberSignupRequest = new MemberSignupRequest("manlubo11@gmail.com", "12345678", "전상현", "010-6687-8628", "서울특별시 금천구 독산동", Role.ORG);
+    log.info(authService.signup(memberSignupRequest, "426424e8-e26a-444c-bbba-4cef1e4b8112"));
   }
 }

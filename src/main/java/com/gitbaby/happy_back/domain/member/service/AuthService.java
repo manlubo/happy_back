@@ -5,5 +5,5 @@ import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
 
 public interface AuthService {
   public boolean signUpEmailVerification(MemberSignupEmailRequest memberSignupEmailRequest);
-  public Long userSignup (MemberSignupRequest memberSignupRequest, String emailVerificationToken);
+  public Long signup (MemberSignupRequest memberSignupRequest, String emailVerificationToken);
 }
