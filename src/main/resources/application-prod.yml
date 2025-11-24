@@ -8,3 +8,6 @@ spring:
 logging:
   level:
     org.springframework.security: error
+custom:
+  api-url: "https://api.happy.gitbaby.com"
+  frontend-url: "https://happy.gitbaby.com"

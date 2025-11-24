@@ -26,8 +26,8 @@ public class RedisUtil {
   }
 
   // 키 삭제
-  public void delete(String key) {
-    redisTemplate.delete(key);
+  public boolean delete(String key) {
+    return redisTemplate.delete(key);
   }
 
   // 키 확인
