@@ -31,4 +31,9 @@ public class MemberServiceImpl implements MemberService {
     return member.getId();
   }
 
+  // 회원가입 - 기관회원
+  @Override
+  public Long OrgSignUp() {
+    return 0L;
+  }
 }

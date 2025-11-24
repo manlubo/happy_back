@@ -12,3 +12,6 @@ spring:
 logging:
   level:
     org.springframework.security: DEBUG
+custom:
+  api-url: "http://localhost:8080"
+  frontend-url: "http://localhost:3000"

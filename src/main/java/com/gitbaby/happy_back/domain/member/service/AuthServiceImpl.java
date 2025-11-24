@@ -1,8 +1,11 @@
 package com.gitbaby.happy_back.domain.member.service;
 
+import com.gitbaby.happy_back.domain.common.service.MailService;
 import com.gitbaby.happy_back.domain.common.util.RedisUtil;
+import com.gitbaby.happy_back.domain.member.dto.MemberSignupEmailRequest;
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
 import com.gitbaby.happy_back.domain.member.exception.EmailMismatchException;
+import com.gitbaby.happy_back.domain.member.exception.EmailVerificationExpiredException;
 import com.gitbaby.happy_back.domain.member.exception.InvalidEmailTokenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -19,6 +22,7 @@ public class AuthServiceImpl implements AuthService {
   private final MemberService memberService;
   private final PasswordEncoder passwordEncoder;
   private final RedisUtil redisUtil;
+  private final MailService mailService;
 
   private static final String EMAIL_VERIFICATION_PREFIX =  "EMAIL_VERIFICATION:";
 
@@ -50,6 +54,12 @@ public class AuthServiceImpl implements AuthService {
     return redisUtil.delete(getEmailKey(emailVerificationToken));
   }
 
+  @Override
+  public boolean signUpEmailVerification(MemberSignupEmailRequest memberSignupEmailRequest) {
+    String emailVerificationToken = createEmailVerification(memberSignupEmailRequest.getEmail());
+    mailService.signupEmailVerification(memberSignupEmailRequest.getEmail(), emailVerificationToken, memberSignupEmailRequest.getRole());
+    return hasEmailVerification(emailVerificationToken);
+  }
 
   // 회원가입 - 일반회원
   @Override
@@ -60,15 +70,20 @@ public class AuthServiceImpl implements AuthService {
       throw new InvalidEmailTokenException();
     }
 
+    // 이메일 인증 정보 만료되었을 때
+    if(!hasEmailVerification(emailVerificationToken)){
+      throw new EmailVerificationExpiredException();
+    }
+
     // 인증한 이메일과, 입력된 이메일이 다를 때
-    if(readEmailVerification(emailVerificationToken).equals(memberSignupRequest.getEmail())) {
+    if(!readEmailVerification(emailVerificationToken).equals(memberSignupRequest.getEmail())) {
       throw new EmailMismatchException();
     }
 
     memberSignupRequest.setPassword(passwordEncoder.encode(memberSignupRequest.getPassword()));
     Long memberId = memberService.userSignUp(memberSignupRequest);
 
-    deleteEmailVerification(memberSignupRequest.getEmail());
+    deleteEmailVerification(emailVerificationToken);
 
     return memberId;
   }
