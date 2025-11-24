@@ -88,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     memberSignupRequest.setPassword(passwordEncoder.encode(memberSignupRequest.getPassword()));
-    Long memberId = memberService.signUp(memberSignupRequest);
+    Long memberId = memberService.signup(memberSignupRequest);
 
     deleteEmailVerification(emailVerificationToken);
 

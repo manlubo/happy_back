@@ -19,6 +19,7 @@ public class MemberServiceImpl implements MemberService {
   private final MemberRepository memberRepository;
   private final MemberMapper memberMapper;
 
+  // 이메일 가입 여부 체크
   @Override
   public boolean hasEmail(String email) {
     return memberRepository.existsByEmail(email);
@@ -26,15 +27,11 @@ public class MemberServiceImpl implements MemberService {
 
   // 회원가입
   @Override
-  public Long signUp(MemberSignupRequest memberSignupRequest) {
-
-    // 역할이 어드민일 때
-    if(Role.ADMIN.equals(memberSignupRequest.getRole())){
-
-    }
-
+  public Long signup(MemberSignupRequest memberSignupRequest) {
     Member member = memberMapper.toEntity(memberSignupRequest);
+
     switch (memberSignupRequest.getRole()){
+      // 어드민은 기본적으로 회원가입 불가
       case ADMIN -> throw new AdminRoleNotAllowedException();
 
 
@@ -48,7 +45,7 @@ public class MemberServiceImpl implements MemberService {
       }
     }
 
-    log.info(memberRepository.save(member));
+    memberRepository.save(member);
 
     return member.getId();
   }
