@@ -2,6 +2,8 @@ package com.gitbaby.happy_back.security.config;
 
 import com.gitbaby.happy_back.domain.member.en.Role;
 import com.gitbaby.happy_back.security.filter.JwtAuthenticationFilter;
+import com.gitbaby.happy_back.security.handler.OAuthFailureHandler;
+import com.gitbaby.happy_back.security.handler.OAuthSuccessHandler;
 import com.gitbaby.happy_back.security.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +29,8 @@ import java.util.List;
 public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final CustomOAuth2UserService customOAuth2UserService;
+  private final OAuthSuccessHandler oAuthSuccessHandler;
+  private final OAuthFailureHandler oAuthFailureHandler;
 
   @Value("${custom.frontend-url}")
   private String frontendUrl;
@@ -47,14 +51,15 @@ public class SecurityConfig {
       .cors(Customizer.withDefaults())
       .csrf(AbstractHttpConfigurer::disable)
       .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/api/**").permitAll()
-        .requestMatchers("/api/org/**").hasRole(Role.ORG.toString())
+        .requestMatchers("/api/**", "/oauth2/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
         .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.toString())
         .anyRequest().authenticated()
       )
       .formLogin(AbstractHttpConfigurer::disable)
       .oauth2Login(oauth2 -> oauth2
-        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)))
+        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+        .successHandler(oAuthSuccessHandler)
+        .failureHandler(oAuthFailureHandler))
       .httpBasic(AbstractHttpConfigurer::disable)
       .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
