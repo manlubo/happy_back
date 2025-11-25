@@ -1,10 +1,10 @@
 package com.gitbaby.happy_back.security.filter;
 
 import com.gitbaby.happy_back.security.dto.MemberAuthDTO;
-import com.gitbaby.happy_back.security.exception.TokenUnauthorizedException;
 import com.gitbaby.happy_back.security.service.CustomUserDetailService;
 import com.gitbaby.happy_back.security.util.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,69 +32,104 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                   FilterChain filterChain)
     throws ServletException, IOException {
 
-    String bearerToken = getBearerToken(request);
-    String accessToken = resolveAccessToken(bearerToken);
+    String accessToken = resolveAccessToken(request);
 
-    if (accessToken == null) {
+    // 엑세스 토큰 없거나 인증된 사용자면 바로 필터체인
+    if (accessToken == null || SecurityContextHolder.getContext().getAuthentication() != null) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    if (SecurityContextHolder.getContext().getAuthentication() == null) {
-      try {
-        String memberId = jwtUtil.getClaims(accessToken).getSubject();
-        setAuthentication(memberId, request);
-        log.info("JWT 인증 성공 : {}", memberId);
-      } catch (ExpiredJwtException ex) {
-        log.warn("Access Token 만료됨");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("""
-            {
-              "errorCode": "TOKEN_EXPIRED",
-              "message": "Access Token이 만료되었습니다."
-            }
-        """);
+    try {
+      // Claims 파싱
+      String memberId = jwtUtil.getClaims(accessToken).getSubject();
+
+      // 인증 세팅
+      setAuthentication(memberId, request, response);
+
+      if (response.isCommitted()) {
         return;
-      } catch (Exception e) {
-        log.error("JWT 파싱/검증 실패", e);
-        throw new TokenUnauthorizedException();
       }
+
+      log.info("JWT 인증 성공 : {}", memberId);
+
+    } catch (ExpiredJwtException ex) {
+      writeJsonError(response, 401, "TOKEN_EXPIRED", "Access Token이 만료되었습니다.");
+      return;
+
+    } catch (io.jsonwebtoken.security.SignatureException ex) {
+      writeJsonError(response, 401, "TOKEN_INVALID", "서명이 위조된 토큰입니다.");
+      return;
+
+    } catch (io.jsonwebtoken.MalformedJwtException ex) {
+      writeJsonError(response, 401, "TOKEN_MALFORMED", "잘못된 JWT 형식입니다.");
+      return;
+
+    } catch (io.jsonwebtoken.security.SecurityException ex) {
+      writeJsonError(response, 401, "TOKEN_SECURITY", "JWT 보안 오류가 발생했습니다.");
+      return;
+
+    } catch (JwtException ex) {
+      writeJsonError(response, 401, "TOKEN_ERROR", "JWT 처리 중 오류가 발생했습니다.");
+      return;
+
+    } catch (Exception ex) {
+      writeJsonError(response, 500, "SERVER_ERROR", "서버 오류가 발생했습니다.");
+      return;
     }
 
     filterChain.doFilter(request, response);
-
   }
 
+  // 컨텍스트에 멤버 등록
+  private void setAuthentication(String memberId, HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-  private void setAuthentication(String memberId, HttpServletRequest request) {
     MemberAuthDTO member =
       (MemberAuthDTO) customUserDetailService.loadUserByUsername(memberId);
 
-    UsernamePasswordAuthenticationToken authentication =
+    if (member == null) {
+      writeJsonError(response,
+        HttpServletResponse.SC_UNAUTHORIZED,
+        "INVALID_USER",
+        "유효하지 않은 사용자입니다."
+      );
+      return;
+    }
+
+    UsernamePasswordAuthenticationToken auth =
       new UsernamePasswordAuthenticationToken(
         member,
         null,
         member.getAuthorities()
       );
 
-    authentication.setDetails(
-      new WebAuthenticationDetailsSource().buildDetails(request)
-    );
-
-    SecurityContextHolder.getContext().setAuthentication(authentication);
+    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    SecurityContextHolder.getContext().setAuthentication(auth);
   }
 
-  // 헤더에서 엑세스토큰 가져오기
-  private String getBearerToken(HttpServletRequest request) {
-    return request.getHeader("Authorization");
-  }
 
-  // 헤더에서 엑세스토큰 값 파싱
-  private String resolveAccessToken(String bearerToken) {
+  // 리퀘스트에서 엑세스토큰 값 파싱
+  private String resolveAccessToken(HttpServletRequest request) {
+    String bearerToken = request.getHeader("Authorization");
     if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
       return bearerToken.substring(7);
     }
     return null;
+  }
+
+  // Json 에러 공통처리
+  private void writeJsonError(HttpServletResponse response,
+                              int status,
+                              String code,
+                              String message) throws IOException {
+
+    response.setStatus(status);
+    response.setContentType("application/json;charset=UTF-8");
+    response.getWriter().write("""
+                {
+                  "errorCode": "%s",
+                  "message": "%s"
+                }
+                """.formatted(code, message));
   }
 }

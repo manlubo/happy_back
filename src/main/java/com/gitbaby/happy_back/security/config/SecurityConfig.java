@@ -1,6 +1,8 @@
 package com.gitbaby.happy_back.security.config;
 
 import com.gitbaby.happy_back.domain.member.en.Role;
+import com.gitbaby.happy_back.security.filter.JwtAuthenticationFilter;
+import com.gitbaby.happy_back.security.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +15,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -22,6 +25,9 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
+  private final CustomOAuth2UserService customOAuth2UserService;
+
   @Value("${custom.frontend-url}")
   private String frontendUrl;
 
@@ -47,8 +53,11 @@ public class SecurityConfig {
         .anyRequest().authenticated()
       )
       .formLogin(AbstractHttpConfigurer::disable)
+      .oauth2Login(oauth2 -> oauth2
+        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)))
       .httpBasic(AbstractHttpConfigurer::disable)
-      .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+      .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+      .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
