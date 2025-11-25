@@ -6,8 +6,10 @@ import com.gitbaby.happy_back.domain.member.entity.MemberProvider;
 import com.gitbaby.happy_back.domain.member.mapper.MemberMapper;
 import com.gitbaby.happy_back.domain.member.repository.MemberProviderRepository;
 import com.gitbaby.happy_back.domain.member.repository.MemberRepository;
-import com.gitbaby.happy_back.security.exception.SocialLinkException;
-import com.gitbaby.happy_back.security.exception.SocialSignupException;
+import com.gitbaby.happy_back.security.dto.MemberAuthDTO;
+import com.gitbaby.happy_back.security.dto.SocialProcessDTO;
+import com.gitbaby.happy_back.security.dto.SocialResult;
+import com.gitbaby.happy_back.security.en.SocialProcessType;
 import com.gitbaby.happy_back.security.recode.SocialUser;
 import com.gitbaby.happy_back.security.util.SocialUtil;
 import lombok.RequiredArgsConstructor;
@@ -38,24 +40,44 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
   public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
     OAuth2User oAuth2User = new DefaultOAuth2UserService().loadUser(userRequest);
 
-    ProviderName providerName = ProviderName.valueOf(userRequest.getClientRegistration().getRegistrationId().toUpperCase());
+    ProviderName providerName =
+      ProviderName.valueOf(userRequest.getClientRegistration().getRegistrationId().toUpperCase());
+
     SocialUser socialUser = socialUtil.getSocialUser(providerName, oAuth2User);
 
-    // 1. 프로바이더 이름 + 프로바이더 고유번호로 먼저 조회
-    Optional<MemberProvider> providerOpt = memberProviderRepository.findByProviderNameAndProviderUuid(socialUser.providerName(), socialUser.providerUuid());
+    // provider로 소셜 계정 찾기
+    Optional<MemberProvider> providerOpt =
+      memberProviderRepository.findByProviderNameAndProviderUuid(
+        socialUser.providerName(),
+        socialUser.providerUuid()
+      );
+
+    // 가입된 계정 > 로그인
     if (providerOpt.isPresent()) {
       Member member = providerOpt.get().getMember();
-      return memberMapper.toMemberAuthDTO(member);
+      MemberAuthDTO authDTO = memberMapper.toMemberAuthDTO(member);
+      return new SocialResult(authDTO);
     }
 
-    // 2. 연동 안 되어있으면 이메일로 기존 멤버 조회
+    // 가입 안된 계정 > 이메일로 유저 유무 확인
     Optional<Member> originMember = memberRepository.findByEmail(socialUser.email());
+
     if (originMember.isPresent()) {
-      // 기존 멤버는 있는데 provider 연동 안 된 상태 → 연동 필요
-      throw new SocialLinkException(socialUser);
+      // 기존 멤버 있음 > 가입불가
+      SocialProcessDTO errorDto = SocialProcessDTO.builder()
+        .socialUser(socialUser)
+        .type(SocialProcessType.FORBIDDEN_EMAIL)
+        .build();
+
+      return new SocialResult(errorDto);
     } else {
-      // 기존 멤버도 없음 → 소셜 신규 가입 필요
-      throw new SocialSignupException(socialUser);
+      // 기존 멤버 없음 > 소셜 신규 가입 필요
+      SocialProcessDTO signupDto = SocialProcessDTO.builder()
+        .socialUser(socialUser)
+        .type(SocialProcessType.SIGNUP)
+        .build();
+
+      return new SocialResult(signupDto);
     }
   }
 }

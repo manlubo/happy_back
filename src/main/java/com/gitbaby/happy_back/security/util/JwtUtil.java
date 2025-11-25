@@ -43,7 +43,7 @@ public class JwtUtil {
   }
 
   // 엑세스 토큰 생성
-  public String createAccessToken(Long memberId, MemberStatus status, HashSet<Role> roles) {
+  public String createAccessToken(Long memberId, MemberStatus status, Set<Role> roles) {
     long expireSeconds = expireMinutes * 60;
 
     Map<String, Object> claims = new HashMap<>();
