@@ -2,7 +2,9 @@ package com.gitbaby.happy_back.domain.member.service;
 
 import com.gitbaby.happy_back.domain.common.service.MailService;
 import com.gitbaby.happy_back.domain.common.util.RedisUtil;
+import com.gitbaby.happy_back.domain.member.dto.MemberReadSignupEmailRequest;
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupEmailRequest;
+import com.gitbaby.happy_back.domain.member.dto.MemberReadSignupEmailResponse;
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
 import com.gitbaby.happy_back.domain.member.exception.EmailAlreadyExistsException;
 import com.gitbaby.happy_back.domain.member.exception.EmailMismatchException;
@@ -57,7 +59,7 @@ public class AuthServiceImpl implements AuthService {
 
   // 회원가입 전 인증 메일 전송
   @Override
-  public boolean signUpEmailVerification(MemberSignupEmailRequest memberSignupEmailRequest) {
+  public boolean signupEmailVerification(MemberSignupEmailRequest memberSignupEmailRequest) {
     // 이미 가입된 이메일일 때
     if(memberService.hasEmail(memberSignupEmailRequest.getEmail())){
       throw new EmailAlreadyExistsException();
@@ -66,6 +68,21 @@ public class AuthServiceImpl implements AuthService {
     String emailVerificationToken = createEmailVerification(memberSignupEmailRequest.getEmail());
     mailService.signupEmailVerification(memberSignupEmailRequest.getEmail(), emailVerificationToken, memberSignupEmailRequest.getRole());
     return hasEmailVerification(emailVerificationToken);
+  }
+
+  @Override
+  public MemberReadSignupEmailResponse signupEmailVerified(MemberReadSignupEmailRequest memberReadSignupEmailRequest) {
+    // 메일인증 토큰 없을 때
+    if(memberReadSignupEmailRequest.getToken() == null){
+      throw new InvalidEmailTokenException();
+    }
+
+    // 이메일 인증 정보 만료 or 잘못된 토큰일 때
+    if(!hasEmailVerification(memberReadSignupEmailRequest.getToken())){
+      throw new EmailVerificationExpiredException();
+    }
+
+    return new MemberReadSignupEmailResponse(readEmailVerification(memberReadSignupEmailRequest.getToken()));
   }
 
   // 회원가입 - 인증처리

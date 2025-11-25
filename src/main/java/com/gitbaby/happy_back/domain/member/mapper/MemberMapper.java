@@ -2,6 +2,7 @@ package com.gitbaby.happy_back.domain.member.mapper;
 
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
 import com.gitbaby.happy_back.domain.member.en.Role;
+import com.gitbaby.happy_back.domain.member.en.SignupRole;
 import com.gitbaby.happy_back.domain.member.entity.Member;
 import com.gitbaby.happy_back.security.dto.MemberAuthDTO;
 import org.mapstruct.Mapper;
@@ -13,17 +14,13 @@ import java.util.Set;
 @Mapper(componentModel = "spring")
 public interface MemberMapper {
 
-  default Set<Role> mapRoles(Role role) {
+  default Set<Role> mapRoles(SignupRole role) {
     Set<Role> roles = new HashSet<>();
 
     roles.add(Role.USER);
 
-    switch (role) {
-      case ORG -> roles.add(Role.ORG);
-      case ADMIN -> {
-        roles.add(Role.ORG);
-        roles.add(Role.ADMIN);
-      }
+    if(SignupRole.ORG.equals(role)){
+      roles.add(Role.ORG);
     }
 
     return roles;

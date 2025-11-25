@@ -3,7 +3,6 @@ package com.gitbaby.happy_back.domain.member.service;
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
 import com.gitbaby.happy_back.domain.member.en.MemberStatus;
 import com.gitbaby.happy_back.domain.member.entity.Member;
-import com.gitbaby.happy_back.domain.member.exception.AdminRoleNotAllowedException;
 import com.gitbaby.happy_back.domain.member.mapper.MemberMapper;
 import com.gitbaby.happy_back.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +29,6 @@ public class MemberServiceImpl implements MemberService {
     Member member = memberMapper.toEntity(memberSignupRequest);
 
     switch (memberSignupRequest.getRole()){
-      // 어드민은 기본적으로 회원가입 불가
-      case ADMIN -> throw new AdminRoleNotAllowedException();
-
-
       case ORG -> {
         member.setStatus(MemberStatus.READY);
 

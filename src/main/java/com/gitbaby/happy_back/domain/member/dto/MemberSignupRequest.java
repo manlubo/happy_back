@@ -1,6 +1,6 @@
 package com.gitbaby.happy_back.domain.member.dto;
 
-import com.gitbaby.happy_back.domain.member.en.Role;
+import com.gitbaby.happy_back.domain.member.en.SignupRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -33,7 +33,7 @@ public class MemberSignupRequest {
   private String address;
 
   @NotBlank(message = "역할은 필수 입력값입니다.")
-  private Role role;
+  private SignupRole role;
 
   // pdf 파일(기관회원용) 추가 필요
 }
