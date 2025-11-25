@@ -3,6 +3,7 @@ package com.gitbaby.happy_back.domain.member.service;
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupEmailRequest;
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
 import com.gitbaby.happy_back.domain.member.en.Role;
+import com.gitbaby.happy_back.domain.member.en.SignupRole;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ class AuthServiceTest {
   @Test
   @DisplayName("회원가입 메일전송 테스트")
   void signUpEmailVerification() {
-    MemberSignupEmailRequest memberSignupEmailRequest = new MemberSignupEmailRequest("manlubo11@gmail.com", Role.ORG);
+    MemberSignupEmailRequest memberSignupEmailRequest = new MemberSignupEmailRequest("manlubo11@gmail.com", SignupRole.ORG);
     log.info(authService.signUpEmailVerification(memberSignupEmailRequest));
 
   }
