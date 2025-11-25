@@ -1,7 +1,7 @@
 package com.gitbaby.happy_back.domain.common.service;
 
 import com.gitbaby.happy_back.domain.common.util.MailUtil;
-import com.gitbaby.happy_back.domain.member.en.Role;
+import com.gitbaby.happy_back.domain.member.en.SignupRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ public class MailService {
   @Value("${custom.frontend-url}")
   private String frontendUrl;
 
-  public void signupEmailVerification(String email, String emailVerificationToken, Role role) {
+  public void signupEmailVerification(String email, String emailVerificationToken, SignupRole role) {
 
     String verificationUrl = frontendUrl + "/signup/" + role.toString().toLowerCase() + "?token=" + emailVerificationToken;
 

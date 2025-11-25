@@ -2,7 +2,6 @@ package com.gitbaby.happy_back.domain.member.service;
 
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
 import com.gitbaby.happy_back.domain.member.en.MemberStatus;
-import com.gitbaby.happy_back.domain.member.en.Role;
 import com.gitbaby.happy_back.domain.member.entity.Member;
 import com.gitbaby.happy_back.domain.member.exception.AdminRoleNotAllowedException;
 import com.gitbaby.happy_back.domain.member.mapper.MemberMapper;
