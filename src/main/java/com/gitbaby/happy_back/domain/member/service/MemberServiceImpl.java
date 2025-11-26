@@ -1,6 +1,7 @@
 package com.gitbaby.happy_back.domain.member.service;
 
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
+import com.gitbaby.happy_back.domain.member.dto.MemberSignupResponse;
 import com.gitbaby.happy_back.domain.member.en.MemberStatus;
 import com.gitbaby.happy_back.domain.member.entity.Member;
 import com.gitbaby.happy_back.domain.member.mapper.MemberMapper;
@@ -25,7 +26,7 @@ public class MemberServiceImpl implements MemberService {
 
   // 회원가입
   @Override
-  public Long signup(MemberSignupRequest memberSignupRequest) {
+  public MemberSignupResponse signup(MemberSignupRequest memberSignupRequest) {
     Member member = memberMapper.toEntity(memberSignupRequest);
 
     switch (memberSignupRequest.getRole()){
@@ -41,7 +42,7 @@ public class MemberServiceImpl implements MemberService {
 
     memberRepository.save(member);
 
-    return member.getId();
+    return new MemberSignupResponse(member.getId(), member.getRoles());
   }
 
 }
