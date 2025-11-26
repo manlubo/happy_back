@@ -42,6 +42,9 @@ public class Member extends BaseTimeEntity {
   @Column(nullable = false)
   private MemberStatus status;
 
+  @Column
+  private String profile;
+
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(
     name = "member_role",

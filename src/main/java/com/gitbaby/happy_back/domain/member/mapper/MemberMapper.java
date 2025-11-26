@@ -1,5 +1,6 @@
 package com.gitbaby.happy_back.domain.member.mapper;
 
+import com.gitbaby.happy_back.domain.member.dto.MemberLoginResponse;
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
 import com.gitbaby.happy_back.domain.member.en.Role;
 import com.gitbaby.happy_back.domain.member.en.SignupRole;
@@ -35,4 +36,6 @@ public interface MemberMapper {
   @Mapping(source = "name", target = "realName")
   @Mapping(target = "attributes", ignore = true)
   MemberAuthDTO toMemberAuthDTO(Member entity);
+
+  MemberLoginResponse toMemberLoginResponse(Member entity);
 }
