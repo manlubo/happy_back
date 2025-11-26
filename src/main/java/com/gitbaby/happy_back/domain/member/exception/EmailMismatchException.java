@@ -1,9 +1,10 @@
 package com.gitbaby.happy_back.domain.member.exception;
 
 import com.gitbaby.happy_back.domain.common.exception.HappyException;
+import org.springframework.http.HttpStatus;
 
 public class EmailMismatchException extends HappyException {
   public EmailMismatchException() {
-    super("EMAIL_MISMATCH", "이메일 정보가 일치하지 않습니다.");
+    super("EMAIL_MISMATCH", "이메일 정보가 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
   }
 }

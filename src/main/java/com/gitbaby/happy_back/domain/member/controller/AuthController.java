@@ -3,6 +3,7 @@ package com.gitbaby.happy_back.domain.member.controller;
 import com.gitbaby.happy_back.domain.common.dto.ApiResponce;
 import com.gitbaby.happy_back.domain.member.dto.MemberReadSignupEmailRequest;
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupEmailRequest;
+import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
 import com.gitbaby.happy_back.domain.member.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +29,11 @@ public class AuthController implements AuthControllerSpec{
   @PostMapping("signup/email/verification/check")
   public ResponseEntity<?> readSignupEmail(@RequestBody @Valid MemberReadSignupEmailRequest req) {
     return ResponseEntity.ok(ApiResponce.success("이메일 인증 성공", authService.signupEmailVerified(req)));
+  }
+
+  @Override
+  @PostMapping("signup/{token}")
+  public ResponseEntity<?> signup(@RequestBody @Valid MemberSignupRequest memberSignupRequest, @PathVariable("token") String token) {
+    return ResponseEntity.ok(ApiResponce.success("회원가입 성공", authService.signup(memberSignupRequest, token)));
   }
 }
