@@ -118,7 +118,7 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public MemberCookieWithLoginResponse login(MemberLoginRequest memberLoginRequest) {
     Member member = memberService.getMemberByUsername(memberLoginRequest.getUsername());
-    if (!member.getPassword().equals(passwordEncoder.encode(memberLoginRequest.getPassword()))) {
+    if (!passwordEncoder.matches(memberLoginRequest.getPassword(),member.getPassword())) {
       throw new PasswordMismatchException();
     }
 
