@@ -4,6 +4,7 @@ import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
 import com.gitbaby.happy_back.domain.member.dto.MemberSignupResponse;
 import com.gitbaby.happy_back.domain.member.en.MemberStatus;
 import com.gitbaby.happy_back.domain.member.entity.Member;
+import com.gitbaby.happy_back.domain.member.exception.UsernameNotFoundExceprion;
 import com.gitbaby.happy_back.domain.member.mapper.MemberMapper;
 import com.gitbaby.happy_back.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,5 +45,25 @@ public class MemberServiceImpl implements MemberService {
 
     return new MemberSignupResponse(member.getId(), member.getRoles());
   }
+
+  // 이메일인지 확인
+  private boolean isEmail(String username) {
+    return username.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+  }
+
+  @Override
+  public Member getMemberByUsername(String username) {
+    Member member;
+    if (isEmail(username)) {
+      member = memberRepository.findByEmail(username).orElseThrow(UsernameNotFoundExceprion::new);
+    }
+    else {
+      member = memberRepository.findByTel(username).orElseThrow(UsernameNotFoundExceprion::new);
+    }
+
+    return member;
+  }
+
+
 
 }

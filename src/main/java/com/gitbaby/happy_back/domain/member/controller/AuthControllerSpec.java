@@ -1,10 +1,7 @@
 package com.gitbaby.happy_back.domain.member.controller;
 
 import com.gitbaby.happy_back.domain.common.dto.ApiResponce;
-import com.gitbaby.happy_back.domain.member.dto.MemberReadSignupEmailRequest;
-import com.gitbaby.happy_back.domain.member.dto.MemberSignupEmailRequest;
-import com.gitbaby.happy_back.domain.member.dto.MemberSignupRequest;
-import com.gitbaby.happy_back.domain.member.dto.MemberSignupResponse;
+import com.gitbaby.happy_back.domain.member.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -178,4 +175,67 @@ public interface AuthControllerSpec {
     )
   })
   ResponseEntity<?> signup(MemberSignupRequest memberSignupRequest, String token);
+
+  @Operation(
+    summary = "로그인",
+    description = """
+      이메일/휴대폰 번호와 비밀번호로 로그인합니다.
+      - 로그인 성공 시 AccessToken, RefreshToken 쿠키가 발급됩니다.
+      - 이메일/휴대폰 번호가 존재하지 않거나 비밀번호가 일치하지 않으면 400 오류를 반환합니다.
+  """
+  )
+  @ApiResponses({
+    @ApiResponse(
+      responseCode = "200",
+      description = "로그인 성공",
+      content = @Content(
+        mediaType = "application/json",
+        examples = @ExampleObject("""
+        {
+          "success": true,
+          "message": "로그인 성공",
+          "data": {
+            "memberId": 3,
+            "email": "test@gitbaby.com",
+            "roles": ["USER"],
+            "status": "ACTIVE"
+          }
+        }
+      """)
+      )
+    ),
+
+    @ApiResponse(
+      responseCode = "400",
+      description = "로그인 실패",
+      content = @Content(
+        mediaType = "application/json",
+        examples = {
+          @ExampleObject(
+            name = "USERNAME_NOT_FOUND",
+            summary = "이메일/휴대번 번호가 존재하지 않음",
+            value = """
+            {
+              "success": false,
+              "errorCode": "USERNAME_NOT_FOUND",
+              "message": "해당 정보로 가입된 유저가 없습니다."
+            }
+          """
+          ),
+          @ExampleObject(
+            name = "PASSWORD_MISMATCH",
+            summary = "비밀번호 불일치",
+            value = """
+            {
+              "success": false,
+              "errorCode": "PASSWORD_MISMATCH",
+              "message": "비밀번호가 일치하지 않습니다."
+            }
+          """
+          )
+        }
+      )
+    )
+  })
+  ResponseEntity<?> login(MemberLoginRequest memberLoginRequest);
 }

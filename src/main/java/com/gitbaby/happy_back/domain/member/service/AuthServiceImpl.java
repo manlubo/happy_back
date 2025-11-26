@@ -3,15 +3,18 @@ package com.gitbaby.happy_back.domain.member.service;
 import com.gitbaby.happy_back.domain.common.service.MailService;
 import com.gitbaby.happy_back.domain.common.util.RedisUtil;
 import com.gitbaby.happy_back.domain.member.dto.*;
-import com.gitbaby.happy_back.domain.member.exception.EmailAlreadyExistsException;
-import com.gitbaby.happy_back.domain.member.exception.EmailMismatchException;
-import com.gitbaby.happy_back.domain.member.exception.EmailVerificationExpiredException;
-import com.gitbaby.happy_back.domain.member.exception.InvalidEmailTokenException;
+import com.gitbaby.happy_back.domain.member.entity.Member;
+import com.gitbaby.happy_back.domain.member.exception.*;
+import com.gitbaby.happy_back.domain.member.mapper.MemberMapper;
+import com.gitbaby.happy_back.security.util.CookieUtil;
+import com.gitbaby.happy_back.security.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +28,9 @@ public class AuthServiceImpl implements AuthService {
   private final MailService mailService;
 
   private static final String EMAIL_VERIFICATION_PREFIX =  "EMAIL_VERIFICATION_TOKEN:";
+  private final MemberMapper memberMapper;
+  private final JwtUtil jwtUtil;
+  private final CookieUtil cookieUtil;
 
   // 이메일 인증용 키 생성
   private String getEmailKey(String emailVerificationToken) {
@@ -90,7 +96,7 @@ public class AuthServiceImpl implements AuthService {
     if(emailVerificationToken == null){
       throw new InvalidEmailTokenException();
     }
-    
+
     // 이메일 인증 정보 만료되었을 때
     if(!hasEmailVerification(emailVerificationToken)){
       throw new EmailVerificationExpiredException();
@@ -107,5 +113,22 @@ public class AuthServiceImpl implements AuthService {
     deleteEmailVerification(emailVerificationToken);
 
     return resp;
+  }
+
+  @Override
+  public MemberCookieWithLoginResponse login(MemberLoginRequest memberLoginRequest) {
+    Member member = memberService.getMemberByUsername(memberLoginRequest.getUsername());
+    if (!member.getPassword().equals(passwordEncoder.encode(memberLoginRequest.getPassword()))) {
+      throw new PasswordMismatchException();
+    }
+
+    MemberLoginResponse res = memberMapper.toMemberLoginResponse(member);
+
+    String accessToken = jwtUtil.createAccessToken(res.getId(), res.getStatus(), res.getRoles());
+    String refreshToken = jwtUtil.createRefreshToken(res.getId());
+
+    List<ResponseCookie> cookies = cookieUtil.createLoginCookies(accessToken, refreshToken, memberLoginRequest.isRememberMe());
+
+    return new MemberCookieWithLoginResponse(res, cookies);
   }
 }
