@@ -35,7 +35,7 @@ public class Attach extends BaseCreatedEntity {
   private String path;
 
   @Column
-  private Boolean image;
+  private boolean image;
 
   @Column
   private String origin;
