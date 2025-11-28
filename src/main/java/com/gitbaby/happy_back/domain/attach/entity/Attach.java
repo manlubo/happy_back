@@ -2,6 +2,7 @@ package com.gitbaby.happy_back.domain.attach.entity;
 
 import com.gitbaby.happy_back.domain.common.entity.BaseCreatedEntity;
 import com.gitbaby.happy_back.domain.member.entity.Member;
+import com.gitbaby.happy_back.domain.board.entity.Board;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,7 +10,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,7 +35,7 @@ public class Attach extends BaseCreatedEntity {
   private String path;
 
   @Column
-  private boolean image;
+  private Boolean image;
 
   @Column
   private String origin;
@@ -44,8 +44,11 @@ public class Attach extends BaseCreatedEntity {
   @JoinColumn(name = "member_id", nullable = true)
   private Member member;
 
-  // 게시글 추가
-  // @ManyToOne(fetch = FetchType.LAZY, optional = true)
-  // @JoinColumn(name = "board_id", nullable = true)
-  // private Board board;
+  @ManyToOne(fetch = FetchType.LAZY, optional = true)
+  @JoinColumn(name = "board_id", nullable = true)
+  private Board board;
+
+  @Column
+  @Builder.Default
+  private boolean isThumbnail = false;
 }
