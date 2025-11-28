@@ -18,3 +18,4 @@
 
 ### 프로젝트 관련 자료
 <a href="https://docs.google.com/spreadsheets/d/1hb1a63on8BZs6pdL26UP8kEoaUuD2vO8hOAk3Vmav2c/edit?usp=sharing" target="_blank">요구사항 정의서, 데이터베이스 설계(DB)</a>
+<a href="https://dbdiagram.io/d/happygivers_develop-68fe14a6357668b732a69bfb" target="_blank">데이터베이스 ERD</a>
