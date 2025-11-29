@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.gitbaby.happy_back.domain.common.util.VersionUtil;
 import com.gitbaby.happy_back.domain.term.dto.TermCreateRequest;
+import com.gitbaby.happy_back.domain.term.dto.TermCreateResponse;
 import com.gitbaby.happy_back.domain.term.entity.Term;
 import com.gitbaby.happy_back.domain.term.mapper.TermMapper;
 import com.gitbaby.happy_back.domain.term.repository.TermRepository;
@@ -22,24 +23,20 @@ public class TermServiceImpl implements TermService {
   private final VersionUtil versionUtil;
 
   @Override
-  public String createTerm(TermCreateRequest termCreateRequest) {
+  public TermCreateResponse createTerm(TermCreateRequest termCreateRequest) {
     List<Term> terms = termRepository.findByType(termCreateRequest.getType());
 
-    String version = "1.0.0";
-    
-    if (!terms.isEmpty()) {
-      String latest = terms.stream()
-        .map(Term::getVersion)
-        .max(versionUtil::compare)
-        .get();
-      
-        version = versionUtil.nextMajor(latest);
-    }
-    
+    String version = terms.stream()
+      .map(Term::getVersion)
+      .max(versionUtil::compare)
+      .map(versionUtil::nextMajor)
+      .orElse("1.0.0");
+
     Term term = termMapper.toEntity(termCreateRequest);
     term.setVersion(version);
-    
-    return termRepository.save(term).getVersion();
+    termRepository.save(term);
+
+    return termMapper.toCreateResponse(term);
   }
 
   
