@@ -1,7 +1,8 @@
 package com.gitbaby.happy_back.domain.term.service;
 
 import com.gitbaby.happy_back.domain.term.dto.TermCreateRequest;
+import com.gitbaby.happy_back.domain.term.dto.TermCreateResponse;
 
 public interface TermService {
-  String createTerm(TermCreateRequest termCreateRequest);
+  TermCreateResponse createTerm(TermCreateRequest termCreateRequest);
 }

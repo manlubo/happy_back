@@ -29,6 +29,7 @@ public interface MemberMapper {
 
   @Mapping(target = "id", ignore = true)
   @Mapping(target = "status", ignore = true)
+  @Mapping(target = "profile", ignore = true)
   @Mapping(target = "roles", expression = "java(mapRoles(memberSignupRequest.getRole()))")
   Member toEntity(MemberSignupRequest memberSignupRequest);
 
