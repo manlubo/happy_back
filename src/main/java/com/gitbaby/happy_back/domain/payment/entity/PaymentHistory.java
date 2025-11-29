@@ -1,25 +1,22 @@
 package com.gitbaby.happy_back.domain.payment.entity;
 
-import com.gitbaby.happy_back.domain.common.entity.BaseTimeEntity;
-import com.gitbaby.happy_back.domain.member.entity.Member;
-import com.gitbaby.happy_back.domain.payment.en.PaymentMethod;
+import com.gitbaby.happy_back.domain.common.entity.BaseCreatedEntity;
 import com.gitbaby.happy_back.domain.payment.en.PaymentStatus;
-
+import com.gitbaby.happy_back.domain.payment.en.PaymentType;
 import jakarta.persistence.*;
 import lombok.*;
 
-
 @Entity
-@Table(name = "payment")
+@Table(name = "payment_history")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @ToString
 @Getter
 @Setter
-public class Payment extends BaseTimeEntity{
+public class PaymentHistory extends BaseCreatedEntity {
   @Id
-  @Column(name = "payment_id")
+  @Column(name = "payment_history_id")
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
@@ -27,16 +24,16 @@ public class Payment extends BaseTimeEntity{
   private Long amount;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "member_id", nullable = false)
-  private Member member;
+  @JoinColumn(name = "payment_id", nullable = false)
+  private Payment payment;
 
   @Column(unique = true)
-  private String impUuid;
+  private String receiptUrl;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  private PaymentMethod method;
-  
+  private PaymentType type;
+
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private PaymentStatus status;

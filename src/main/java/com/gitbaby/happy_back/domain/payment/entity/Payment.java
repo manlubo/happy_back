@@ -1,42 +1,39 @@
 package com.gitbaby.happy_back.domain.payment.entity;
 
-import com.gitbaby.happy_back.domain.common.entity.BaseCreatedEntity;
-import com.gitbaby.happy_back.domain.payment.entity.Payment;
+import com.gitbaby.happy_back.domain.common.entity.BaseTimeEntity;
+import com.gitbaby.happy_back.domain.member.entity.Member;
+import com.gitbaby.happy_back.domain.payment.en.PaymentMethod;
 import com.gitbaby.happy_back.domain.payment.en.PaymentStatus;
-import com.gitbaby.happy_back.domain.payment.en.PaymentType;
-
-
 import jakarta.persistence.*;
 import lombok.*;
 
-
 @Entity
-@Table(name = "payment_history")
+@Table(name = "payment")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @ToString
 @Getter
 @Setter
-public class PaymentHistory extends BaseCreatedEntity{
+public class Payment extends BaseTimeEntity {
   @Id
-  @Column(name = "payment_history_id")
+  @Column(name = "payment_id")
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(nullable = false)
   private Long amount;
-  
+
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "payment_id", nullable = false)
-  private Payment payment;
+  @JoinColumn(name = "member_id", nullable = false)
+  private Member member;
 
   @Column(unique = true)
-  private String receiptUrl;
+  private String impUuid;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
-  private PaymentType type;
+  private PaymentMethod method;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
