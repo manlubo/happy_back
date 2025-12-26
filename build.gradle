@@ -32,9 +32,17 @@ dependencies {
   implementation 'org.springframework.boot:spring-boot-starter-web'
   implementation 'org.springframework.boot:spring-boot-starter-security'
   implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-  developmentOnly 'org.springframework.boot:spring-boot-devtools'
+  // developmentOnly 'org.springframework.boot:spring-boot-devtools' // otel이랑 같이 사용 불가
   implementation 'org.springframework.boot:spring-boot-starter-mail:3.5.5'
   implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+  // otel
+  implementation "io.opentelemetry:opentelemetry-api"
+  implementation('io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.23.0')
+
+  // db migration
+  implementation 'org.flywaydb:flyway-core'
+  implementation 'org.flywaydb:flyway-database-postgresql'
 
   // 암호화 해시
   implementation 'commons-codec:commons-codec:1.19.0'
@@ -86,3 +94,32 @@ dependencies {
 tasks.named('test') {
   useJUnitPlatform()
 }
+
+bootRun {
+
+    jvmArgs = [
+        // OpenTelemetry Java Agent 로드
+        "-javaagent:${projectDir}/infra/otel/opentelemetry-javaagent.jar",
+
+        // 서비스 이름
+        "-Dotel.service.name=happygivers",
+
+        // OTLP Exporter 엔드포인트
+        "-Dotel.exporter.otlp.endpoint=http://localhost:4318",
+
+        // OTLP 전송 프로토콜
+        "-Dotel.exporter.otlp.protocol=http/protobuf",
+
+        // 샘플러 전략(부모 span 따라가기)
+        "-Dotel.traces.sampler=parentbased_traceidratio",
+
+        // 샘플링 비율 (0.5 = 50%)
+        "-Dotel.traces.sampler.arg=1",
+
+        // 로그, 메트릭 전송 비활성화
+        "-Dotel.logs.exporter=none",
+        "-Dotel.metrics.exporter=none"
+
+    ]
+}
+

@@ -2,6 +2,9 @@ package com.gitbaby.happy_back.domain.attach.entity;
 
 import com.gitbaby.happy_back.domain.common.entity.BaseCreatedEntity;
 import com.gitbaby.happy_back.domain.member.entity.Member;
+
+import java.util.UUID;
+
 import com.gitbaby.happy_back.domain.board.entity.Board;
 
 import jakarta.persistence.Column;
@@ -29,7 +32,7 @@ import lombok.ToString;
 public class Attach extends BaseCreatedEntity {
   @Id
   @Column(name = "attach_uuid")
-  private Long uuid;
+  private UUID uuid;
 
   @Column
   private String path;

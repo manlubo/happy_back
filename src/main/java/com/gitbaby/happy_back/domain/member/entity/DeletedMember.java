@@ -1,5 +1,7 @@
 package com.gitbaby.happy_back.domain.member.entity;
 
+import com.gitbaby.happy_back.domain.common.entity.BaseCreatedEntity;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DeletedMember {
+public class DeletedMember extends BaseCreatedEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "deleted_member_id")

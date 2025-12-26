@@ -4,9 +4,10 @@ spring:
       - optional:classpath:secret/prod/redis.yml
       - optional:classpath:secret/prod/cookie.yml
       - optional:classpath:secret/prod/oauth.yml
+      - optional:classpath:secret/prod/db.yml
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
 logging:
   level:
     org.springframework.security: error
@@ -18,4 +19,3 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
-

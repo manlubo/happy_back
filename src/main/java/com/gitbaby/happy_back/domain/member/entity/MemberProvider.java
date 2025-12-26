@@ -1,6 +1,6 @@
 package com.gitbaby.happy_back.domain.member.entity;
 
-import com.gitbaby.happy_back.domain.common.entity.BaseTimeEntity;
+import com.gitbaby.happy_back.domain.common.entity.BaseCreatedEntity;
 import com.gitbaby.happy_back.domain.member.en.ProviderName;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +13,7 @@ import lombok.*;
 @ToString
 @Getter
 @Setter
-public class MemberProvider extends BaseTimeEntity {
+public class MemberProvider extends BaseCreatedEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

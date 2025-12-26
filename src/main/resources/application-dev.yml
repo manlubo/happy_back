@@ -4,9 +4,10 @@ spring:
       - optional:classpath:secret/dev/redis.yml
       - optional:classpath:secret/dev/cookie.yml
       - optional:classpath:secret/dev/oauth.yml
+      - optional:classpath:secret/dev/db.yml
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true

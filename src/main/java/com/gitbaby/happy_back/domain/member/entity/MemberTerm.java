@@ -1,6 +1,5 @@
 package com.gitbaby.happy_back.domain.member.entity;
 
-import com.gitbaby.happy_back.domain.common.entity.BaseCreatedEntity;
 import com.gitbaby.happy_back.domain.common.entity.BaseTimeEntity;
 import com.gitbaby.happy_back.domain.term.entity.Term;
 import jakarta.persistence.*;
@@ -13,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = {"member"})
+@ToString(exclude = { "member" })
 public class MemberTerm extends BaseTimeEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

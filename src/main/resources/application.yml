@@ -5,7 +5,5 @@ spring:
     active: dev
   config:
     import:
-      - optional:classpath:secret/db.yml
-      - optional:classpath:secret/mongo.yml
       - optional:classpath:secret/jwt.yml
       - optional:classpath:secret/mail.yml

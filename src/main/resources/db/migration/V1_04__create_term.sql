@@ -1,0 +1,11 @@
+CREATE TABLE term (
+    term_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+    type TEXT NOT NULL,
+    content TEXT NOT NULL,
+    version TEXT NOT NULL,
+    required BOOLEAN NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT FALSE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
