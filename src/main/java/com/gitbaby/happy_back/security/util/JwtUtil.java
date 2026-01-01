@@ -21,25 +21,26 @@ public class JwtUtil {
   public JwtUtil(@Value("${jwt.secret}") String secret) {
     key = Keys.hmacShaKeyFor(secret.getBytes());
   }
+
   @Value("${jwt.expiration-minutes}")
   private long expireMinutes;
 
   @Value("${jwt.refresh-expiration-days}")
   private long expireDays;
 
-  //  JWT 토큰 생성
+  // JWT 토큰 생성
   private String generateToken(Map<String, Object> claims, String subject, long expireSeconds) {
     Instant now = Instant.now();
     Date issuedAt = Date.from(now);
     Date expiredAt = Date.from(now.plusSeconds(expireSeconds));
 
     return Jwts.builder()
-      .claims(claims)
-      .subject(subject)
-      .issuedAt(issuedAt)
-      .expiration(expiredAt)
-      .signWith(key)
-      .compact();
+        .claims(claims)
+        .subject(subject)
+        .issuedAt(issuedAt)
+        .expiration(expiredAt)
+        .signWith(key)
+        .compact();
   }
 
   // 엑세스 토큰 생성
@@ -62,20 +63,20 @@ public class JwtUtil {
   // Jwt 토큰값 파싱
   public Claims getClaims(String token) {
     return Jwts.parser()
-      .verifyWith(key)
-      .build()
-      .parseSignedClaims(token)
-      .getPayload();
+        .verifyWith(key)
+        .build()
+        .parseSignedClaims(token)
+        .getPayload();
   }
 
   // 토큰 유효성 검증
   public Long getTokenTTL(String token) {
     try {
       Claims claims = Jwts.parser()
-        .verifyWith(key)
-        .build()
-        .parseSignedClaims(token)
-        .getPayload();
+          .verifyWith(key)
+          .build()
+          .parseSignedClaims(token)
+          .getPayload();
 
       // 남은 시간 계산
       long exp = claims.getExpiration().getTime();
