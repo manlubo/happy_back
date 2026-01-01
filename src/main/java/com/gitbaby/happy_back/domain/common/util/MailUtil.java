@@ -20,7 +20,6 @@ public class MailUtil {
   private String from;
   private final JavaMailSender mailSender;
 
-
   @Async
   public void sendMail(String email, String title, String content) {
     try {
@@ -30,13 +29,12 @@ public class MailUtil {
       helper.setTo(email);
       helper.setSubject(title);
       helper.setText(content, true);
-      helper.setFrom(from, "Sayren Team");
+      helper.setFrom(from, "HappyGivers Team");
 
       mailSender.send(mimeMessage);
     } catch (MessagingException | UnsupportedEncodingException e) {
       throw new MailSendException(e);
     }
   }
-
 
 }

@@ -1,4 +1,5 @@
 # OTEL_COLLECTOR_CONFIG=./collector-prod.yml docker-compose up -d
+
 receivers:
   otlp:
     protocols:
@@ -6,6 +7,14 @@ receivers:
       grpc:
 
 processors:
+  filter/drop_hikari_housekeeper:
+    spans:
+      exclude:
+        match_type: regexp
+        attributes:
+          - key: thread.name
+            value: "HikariPool.*:housekeeper"
+
   tail_sampling:
     decision_wait: 10s
     policies:
@@ -25,8 +34,8 @@ processors:
           sampling_percentage: 5
 
 exporters:
-  jaeger:
-    endpoint: jaeger:14250
+  otlp:
+    endpoint: jaeger:4317
     tls:
       insecure: true
 
@@ -34,5 +43,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [tail_sampling]
-      exporters: [jaeger]
+      processors:
+        - filter/drop_hikari_housekeeper
+        - tail_sampling
+      exporters: [otlp]

@@ -7,6 +7,13 @@ receivers:
       http:
 
 processors:
+  filter/drop_hikari_housekeeper:
+    spans:
+      exclude:
+        match_type: regexp
+        attributes:
+          - key: thread.name
+            value: "HikariPool.*:housekeeper"
   batch: {}
 
 exporters:
@@ -19,5 +26,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
+      processors:
+        - filter/drop_hikari_housekeeper
+        - batch
       exporters: [otlp]

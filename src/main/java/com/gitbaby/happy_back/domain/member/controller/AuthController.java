@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/auth")
+@RequestMapping("api/v1/auth")
 @Log4j2
-public class AuthController implements AuthControllerSpec{
+public class AuthController implements AuthControllerSpec {
   private final AuthService authService;
 
   @Override
@@ -32,7 +32,8 @@ public class AuthController implements AuthControllerSpec{
 
   @Override
   @PostMapping("signup/{token}")
-  public ResponseEntity<?> signup(@RequestBody @Valid MemberSignupRequest memberSignupRequest, @PathVariable("token") String token) {
+  public ResponseEntity<?> signup(@RequestBody @Valid MemberSignupRequest memberSignupRequest,
+      @PathVariable("token") String token) {
     return ResponseEntity.ok(ApiResponce.success("회원가입 성공", authService.signup(memberSignupRequest, token)));
   }
 

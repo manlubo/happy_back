@@ -120,6 +120,7 @@ public class AuthServiceImpl implements AuthService {
     return resp;
   }
 
+  // 로그인
   @Override
   @WithSpan
   public MemberCookieWithLoginResponse login(MemberLoginRequest memberLoginRequest) {

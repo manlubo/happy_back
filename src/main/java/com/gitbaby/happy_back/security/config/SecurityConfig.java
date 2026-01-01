@@ -48,21 +48,24 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
-      .cors(Customizer.withDefaults())
-      .csrf(AbstractHttpConfigurer::disable)
-      .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/api/**", "/oauth2/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-        .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.toString())
-        .anyRequest().authenticated()
-      )
-      .formLogin(AbstractHttpConfigurer::disable)
-      .oauth2Login(oauth2 -> oauth2
-        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-        .successHandler(oAuthSuccessHandler)
-        .failureHandler(oAuthFailureHandler))
-      .httpBasic(AbstractHttpConfigurer::disable)
-      .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-      .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        .cors(Customizer.withDefaults())
+        .csrf(AbstractHttpConfigurer::disable)
+        .authorizeHttpRequests(auth -> auth
+            // 퍼블릭
+            .requestMatchers("/api/v1/**", "/oauth2/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+            .permitAll()
+            // 관리자 권한 필요
+            .requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.toString())
+            .anyRequest().authenticated())
+        .formLogin(AbstractHttpConfigurer::disable)
+        .oauth2Login(oauth2 -> oauth2
+            .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+            .successHandler(oAuthSuccessHandler)
+            .failureHandler(oAuthFailureHandler))
+        .httpBasic(AbstractHttpConfigurer::disable)
+        .sessionManagement(
+            sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }
@@ -79,7 +82,8 @@ public class SecurityConfig {
     // 쿠키, Authorization 같은 자격 증명 정보를 포함한 요청 허용
     configuration.setAllowCredentials(true);
 
-    // 브라우저가 요청할 때 추가하는 모든 커스텀 헤더를 허용 ("Authorization", "Content-Type" 이런식으로 사용하기도 함)
+    // 브라우저가 요청할 때 추가하는 모든 커스텀 헤더를 허용 ("Authorization", "Content-Type" 이런식으로 사용하기도
+    // 함)
     configuration.setAllowedHeaders(List.of("*"));
 
     // CORS 매핑 소스 생성 (URL 패턴별로 CORS 정책을 등록하는 역할)
