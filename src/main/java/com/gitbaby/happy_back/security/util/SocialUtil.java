@@ -11,32 +11,30 @@ import java.util.Map;
 public class SocialUtil {
   public SocialUser getSocialUser(ProviderName providerName, OAuth2User oAuth2User) {
     SocialUser socialUser = null;
-    switch(providerName) {
+    switch (providerName) {
       case GOOGLE -> socialUser = getGoogleUser(providerName, oAuth2User);
-      case NAVER ->  socialUser = getNaverUser(providerName, oAuth2User);
-      case KAKAO ->  socialUser = getKakaoUser(providerName, oAuth2User);
+      case NAVER -> socialUser = getNaverUser(providerName, oAuth2User);
+      case KAKAO -> socialUser = getKakaoUser(providerName, oAuth2User);
     }
     return socialUser;
   }
 
   private SocialUser getGoogleUser(ProviderName providerName, OAuth2User oAuth2User) {
     return new SocialUser(
-      providerName,
-      oAuth2User.getAttribute("sub"),
-      oAuth2User.getAttribute("email"),
-      oAuth2User.getAttribute("name")
-    );
+        providerName,
+        oAuth2User.getAttribute("sub"),
+        oAuth2User.getAttribute("email"),
+        oAuth2User.getAttribute("name"));
   }
 
   private SocialUser getNaverUser(ProviderName providerName, OAuth2User oAuth2User) {
     Map<String, Object> response = (Map<String, Object>) oAuth2User.getAttributes().get("response");
 
     return new SocialUser(
-      providerName,
-      (String) response.get("id"),
-      (String) response.get("email"),
-      (String) response.get("name")
-    );
+        providerName,
+        (String) response.get("id"),
+        (String) response.get("email"),
+        (String) response.get("name"));
   }
 
   private SocialUser getKakaoUser(ProviderName providerName, OAuth2User oAuth2User) {
@@ -51,8 +49,6 @@ public class SocialUtil {
     String nickname = (String) profile.get("nickname");
     String email = (String) kakaoAccount.get("email");
 
-
     return new SocialUser(providerName, providerUid, email, nickname);
   }
 }
-

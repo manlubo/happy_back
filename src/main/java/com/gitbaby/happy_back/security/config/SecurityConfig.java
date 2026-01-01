@@ -7,12 +7,14 @@ import com.gitbaby.happy_back.security.handler.OAuthSuccessHandler;
 import com.gitbaby.happy_back.security.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import com.gitbaby.happy_back.security.entrypoint.CustomAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,11 +28,13 @@ import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableWebSecurity
 public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final CustomOAuth2UserService customOAuth2UserService;
   private final OAuthSuccessHandler oAuthSuccessHandler;
   private final OAuthFailureHandler oAuthFailureHandler;
+  private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
   @Value("${custom.frontend-url}")
   private String frontendUrl;
@@ -58,6 +62,7 @@ public class SecurityConfig {
             .requestMatchers("/api/v1/admin/**").hasRole(Role.ADMIN.toString())
             .anyRequest().authenticated())
         .formLogin(AbstractHttpConfigurer::disable)
+        .exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
         .oauth2Login(oauth2 -> oauth2
             .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
             .successHandler(oAuthSuccessHandler)

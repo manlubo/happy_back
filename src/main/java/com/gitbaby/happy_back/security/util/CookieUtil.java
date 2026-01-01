@@ -29,11 +29,11 @@ public class CookieUtil {
   private ResponseCookie.ResponseCookieBuilder baseCookie(String name, String value) {
 
     ResponseCookie.ResponseCookieBuilder builder = ResponseCookie
-      .from(name, value)
-      .httpOnly(true)
-      .secure(secure)
-      .sameSite(sameSite)
-      .path("/");
+        .from(name, value)
+        .httpOnly(true)
+        .secure(secure)
+        .sameSite(sameSite)
+        .path("/");
 
     if (domain != null && !domain.isBlank()) {
       builder.domain(domain);
@@ -45,48 +45,45 @@ public class CookieUtil {
   // 엑세스 쿠키 생성
   public ResponseCookie createAccessCookie(String accessToken) {
     return baseCookie("HP_ACCESS", accessToken)
-      .maxAge(expirationMinutes * 60)
-      .build();
+        .maxAge(expirationMinutes * 60)
+        .build();
   }
 
   // 엑세스 쿠키 삭제
   public ResponseCookie deleteAccessCookie() {
     return baseCookie("HP_ACCESS", "")
-      .maxAge(0)
-      .build();
+        .maxAge(0)
+        .build();
   }
-
 
   // 리프레쉬 쿠키 생성
   public ResponseCookie createRefreshCookie(String refreshToken, boolean rememberMe) {
     long maxAge = rememberMe ? expireDays * 24 * 60 * 60 : -1;
 
     return baseCookie("HP_REFRESH", refreshToken)
-      .maxAge(maxAge)
-      .build();
+        .maxAge(maxAge)
+        .build();
   }
 
   // 리프레쉬 쿠키 삭제
   public ResponseCookie deleteRefreshCookie() {
     return baseCookie("HP_REFRESH", "")
-      .maxAge(0)
-      .build();
+        .maxAge(0)
+        .build();
   }
 
   // 로그인시 사용(쿠키 전체 발급)
   public List<ResponseCookie> createLoginCookies(String accessToken, String refreshToken, boolean rememberMe) {
     return List.of(
-      createAccessCookie(accessToken),
-      createRefreshCookie(refreshToken, rememberMe)
-    );
+        createAccessCookie(accessToken),
+        createRefreshCookie(refreshToken, rememberMe));
   }
 
   // 로그아웃시 사용(쿠키 전체 삭제)
   public List<ResponseCookie> createLogoutCookies() {
     return List.of(
-      deleteAccessCookie(),
-      deleteRefreshCookie()
-    );
+        deleteAccessCookie(),
+        deleteRefreshCookie());
   }
 
   // 쿠키 존재 여부 확인
