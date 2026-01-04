@@ -13,7 +13,7 @@ logging:
     org.springframework.security: error
 custom:
   api-url: "https://api.happy.gitbaby.com"
-  frontend-url: "https://happy.gitbaby.com"
+  frontend-url: "https://happygivers.gitbaby.com"
 springdoc:
   api-docs:
     enabled: false
