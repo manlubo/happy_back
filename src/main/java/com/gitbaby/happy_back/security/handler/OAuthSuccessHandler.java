@@ -28,13 +28,14 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
 
   @Override
-  public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+  public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+      Authentication authentication) throws IOException, ServletException {
     Object data = ((SocialResult) authentication.getPrincipal()).getData();
     String json = objectMapper.writeValueAsString(Map.of("status", "UNKNOWN"));
 
     if (data instanceof MemberAuthDTO member) {
       // 토큰 생성
-      String accessToken = jwtUtil.createAccessToken(member.getId(), member.getStatus(), member.getRoles());
+      String accessToken = jwtUtil.createAccessToken(member.getId());
       String refreshToken = jwtUtil.createRefreshToken(member.getId());
 
       // 쿠키생성
@@ -42,22 +43,19 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
       cookies.forEach(cookie -> response.addHeader("Set-Cookie", cookie.toString()));
 
       json = objectMapper.writeValueAsString(Map.of(
-        "status", "LOGIN_SUCCESS"
-      ));
+          "status", "LOGIN_SUCCESS"));
     }
 
     if (data instanceof SocialProcessDTO process) {
       if (SocialProcessType.SIGNUP.equals(process.getType())) {
         json = objectMapper.writeValueAsString(Map.of(
-          "status", "SIGNUP_REQUIRED",
-          "socialUser", process.getSocialUser()
-        ));
+            "status", "SIGNUP_REQUIRED",
+            "socialUser", process.getSocialUser()));
       }
       if (SocialProcessType.FORBIDDEN_EMAIL.equals(process.getType())) {
         json = objectMapper.writeValueAsString(Map.of(
-          "status", "EMAIL_EXISTS",
-          "message", "이미 가입된 이메일입니다."
-        ));
+            "status", "EMAIL_EXISTS",
+            "message", "이미 가입된 이메일입니다."));
       }
     }
 
@@ -65,13 +63,12 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     response.getWriter().write(fallbackScript(json));
   }
 
-
-  private String fallbackScript(String json){
+  private String fallbackScript(String json) {
     return """
-        <script>
-          window.opener.postMessage(%s, window.opener.location.origin);
-          window.close();
-        </script>
-    """.formatted(json);
+            <script>
+              window.opener.postMessage(%s, window.opener.location.origin);
+              window.close();
+            </script>
+        """.formatted(json);
   }
 }

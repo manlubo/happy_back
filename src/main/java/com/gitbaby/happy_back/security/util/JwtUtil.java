@@ -44,14 +44,10 @@ public class JwtUtil {
   }
 
   // 엑세스 토큰 생성
-  public String createAccessToken(Long memberId, MemberStatus status, Set<Role> roles) {
+  public String createAccessToken(Long memberId) {
     long expireSeconds = expireMinutes * 60;
 
-    Map<String, Object> claims = new HashMap<>();
-    claims.put("status", status);
-    claims.put("roles", roles);
-
-    return generateToken(claims, memberId.toString(), expireSeconds);
+    return generateToken(Collections.emptyMap(), memberId.toString(), expireSeconds);
   }
 
   // 리프레시 토큰 생성

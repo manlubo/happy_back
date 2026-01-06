@@ -131,7 +131,7 @@ public class AuthServiceImpl implements AuthService {
 
     MemberLoginResponse res = memberMapper.toMemberLoginResponse(member);
 
-    String accessToken = jwtUtil.createAccessToken(res.getId(), res.getStatus(), res.getRoles());
+    String accessToken = jwtUtil.createAccessToken(res.getId());
     String refreshToken = jwtUtil.createRefreshToken(res.getId());
 
     List<ResponseCookie> cookies = cookieUtil.createLoginCookies(accessToken, refreshToken,
