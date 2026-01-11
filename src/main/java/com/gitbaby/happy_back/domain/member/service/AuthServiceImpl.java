@@ -139,4 +139,9 @@ public class AuthServiceImpl implements AuthService {
 
     return new MemberCookieWithLoginResponse(res, cookies);
   }
+
+  @Override
+  public List<ResponseCookie> logout() {
+    return cookieUtil.createLogoutCookies();
+  }
 }

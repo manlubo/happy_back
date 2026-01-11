@@ -6,7 +6,11 @@ import com.gitbaby.happy_back.domain.member.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
+import java.util.List;
+
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,5 +50,14 @@ public class AuthController implements AuthControllerSpec {
     res.getCookies().forEach(cookie -> builder.header(HttpHeaders.SET_COOKIE, cookie.toString()));
 
     return builder.body(ApiResponce.success("로그인 성공", res.getMemberLoginResponse()));
+  }
+
+  @Override
+  @PostMapping("logout")
+  public ResponseEntity<?> logout() {
+    List<ResponseCookie> cookies = authService.logout();
+    ResponseEntity.BodyBuilder builder = ResponseEntity.ok();
+    cookies.forEach(cookie -> builder.header(HttpHeaders.SET_COOKIE, cookie.toString()));
+    return builder.body(ApiResponce.success("로그아웃 성공", null));
   }
 }
