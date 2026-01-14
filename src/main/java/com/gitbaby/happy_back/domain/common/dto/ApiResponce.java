@@ -10,16 +10,16 @@ import lombok.Getter;
 public class ApiResponce<T> {
   private boolean success;
   private String message;
+  private String code;
   private T data;
-  private String errorCode;
 
   // 성공 응답
-  public static <T> ApiResponce<T> success(String message, T data){
-    return new ApiResponce<>(true, message, data, null);
+  public static <T> ApiResponce<T> success(String message, T data) {
+    return new ApiResponce<>(true, message, null, data);
   }
 
   // 실패 응답
-  public static ApiResponce<?> fail(String message, String errorCode){
-    return new ApiResponce<>(false, message, null, errorCode);
+  public static ApiResponce<?> fail(String code, String message) {
+    return new ApiResponce<>(false, message, code, null);
   }
 }
