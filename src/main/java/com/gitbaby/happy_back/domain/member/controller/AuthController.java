@@ -60,4 +60,17 @@ public class AuthController implements AuthControllerSpec {
     cookies.forEach(cookie -> builder.header(HttpHeaders.SET_COOKIE, cookie.toString()));
     return builder.body(ApiResponce.success("로그아웃 성공", null));
   }
+
+  @Override
+  @PostMapping("tel/verification")
+  public ResponseEntity<?> sendSms(@RequestBody @Valid MemberSendSmsRequest memberSendSmsRequest) {
+    authService.smsVerification(memberSendSmsRequest);
+    return ResponseEntity.ok(ApiResponce.success("인증문자 발송 성공", null));
+  }
+
+  @Override
+  @PostMapping("tel/verification/check")
+  public ResponseEntity<?> verifiedSms(@RequestBody @Valid MemberSmsVerifiedRequest memberSmsVerifiedRequest) {
+    return ResponseEntity.ok(ApiResponce.success("인증번호 확인 성공", authService.signupSmsVerified(memberSmsVerifiedRequest)));
+  }
 }
