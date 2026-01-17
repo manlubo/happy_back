@@ -74,11 +74,17 @@
 - 메일 전송을 @Async로 비동기 처리하여 요청 스레드 점유 제거
 - SMTP 외부 I/O 대기 제거로 API 응답 시간 개선(14364ms => 20ms)
 
+### 비동기 실행용 Service 생성
+- 비동기처리 전용 `AsyncService`를 생성하여, 비즈니스 규칙과 분리하여 관리
+
 ### Security
 
 - JWT 인증 필터는 토큰 검증과 SecurityContext 설정만 담당
 - 인증 실패 응답은 `AuthenticationEntryPoint`에서 공통 처리하도록 책임 분리
 - 필터와 인증 실패 처리의 역할을 명확히 분리하여 유지보수성과 확장성 확보
+
+### 서버 레벨 Throttle 적용
+- Redis를 활용해, 동일한 요청에 대해 일정 시간동안 API호출을 제한
 
 ---
 ## 문제 해결
