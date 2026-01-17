@@ -33,14 +33,7 @@ public class MemberServiceImpl implements MemberService {
   @Transactional
   public MemberSignupResponse signup(MemberSignupRequest memberSignupRequest) {
     // 기존 휴대폰으로 새로운 유저가 가입 시, 기존 회원의 휴대폰 번호를 삭제
-    if (memberRepository.existsByTel(memberSignupRequest.getTel())) {
-      Member telMember = getMemberByTel(memberSignupRequest.getTel());
-      telMember.setTel(null);
-
-      memberRepository.save(telMember);
-      memberRepository.flush();
-    }
-
+    memberRepository.clearTel(memberSignupRequest.getTel());
 
     Member member = memberMapper.toEntity(memberSignupRequest);
 
