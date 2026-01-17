@@ -1,8 +1,7 @@
 package com.gitbaby.happy_back.domain.member.service;
 
-import com.gitbaby.happy_back.domain.common.service.MailService;
+import com.gitbaby.happy_back.domain.common.service.AsyncService;
 import com.gitbaby.happy_back.domain.common.util.RedisUtil;
-import com.gitbaby.happy_back.domain.common.util.SmsUtil;
 import com.gitbaby.happy_back.domain.member.dto.*;
 import com.gitbaby.happy_back.domain.member.entity.Member;
 import com.gitbaby.happy_back.domain.member.exception.*;
@@ -28,14 +27,13 @@ public class AuthServiceImpl implements AuthService {
   private final MemberService memberService;
   private final PasswordEncoder passwordEncoder;
   private final RedisUtil redisUtil;
-  private final MailService mailService;
+  private final AsyncService asyncService;
 
   private static final String EMAIL_VERIFICATION_PREFIX = "EMAIL_VERIFICATION_TOKEN:";
   private static final String SMS_VERIFICATION_PREFIX = "SMS_VERIFICATION_TOKEN:";
   private final MemberMapper memberMapper;
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
-  private final SmsUtil smsUtil;
 
   // 이메일 인증용 키 생성
   private String getEmailKey(String emailVerificationToken) {
@@ -103,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     String emailVerificationToken = createEmailVerification(memberSignupEmailRequest.getEmail());
-    mailService.signupEmailVerification(memberSignupEmailRequest.getEmail(), emailVerificationToken,
+    asyncService.signupEmailVerification(memberSignupEmailRequest.getEmail(), emailVerificationToken,
         memberSignupEmailRequest.getRole());
     return hasEmailVerification(emailVerificationToken);
   }
@@ -181,7 +179,7 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public void smsVerification(MemberSendSmsRequest memberSendSmsRequest) {
     String TelVerificationToken = createSMSVerification(memberSendSmsRequest.getTel());
-    smsUtil.sendSms(memberSendSmsRequest.getTel(), TelVerificationToken);
+    asyncService.sendSms(memberSendSmsRequest.getTel(), TelVerificationToken);
   }
 
   @Override

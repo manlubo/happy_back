@@ -74,6 +74,9 @@
 - 메일 전송을 @Async로 비동기 처리하여 요청 스레드 점유 제거
 - SMTP 외부 I/O 대기 제거로 API 응답 시간 개선(14364ms => 20ms)
 
+### 비동기 실행용 Service 생성
+- 비동기처리 전용 `AsyncService`를 생성하여, 비즈니스 규칙과 분리하여 관리
+
 ### Security
 
 - JWT 인증 필터는 토큰 검증과 SecurityContext 설정만 담당
