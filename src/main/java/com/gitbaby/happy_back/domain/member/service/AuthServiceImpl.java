@@ -1,5 +1,6 @@
 package com.gitbaby.happy_back.domain.member.service;
 
+import com.gitbaby.happy_back.domain.common.exception.ThrottleException;
 import com.gitbaby.happy_back.domain.common.service.AsyncService;
 import com.gitbaby.happy_back.domain.common.util.RedisUtil;
 import com.gitbaby.happy_back.domain.member.dto.*;
@@ -30,7 +31,9 @@ public class AuthServiceImpl implements AuthService {
   private final AsyncService asyncService;
 
   private static final String EMAIL_VERIFICATION_PREFIX = "EMAIL_VERIFICATION_TOKEN:";
+  private static final String EMAIL_SEND_THROTTLE = "EMAIL_SEND_THROTTLE:";
   private static final String SMS_VERIFICATION_PREFIX = "SMS_VERIFICATION_TOKEN:";
+  private static final String SMS_SEND_THROTTLE = "SMS_SEND_THROTTLE:";
   private final MemberMapper memberMapper;
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
@@ -42,7 +45,12 @@ public class AuthServiceImpl implements AuthService {
 
   // 이메일 인증 생성
   private String createEmailVerification(String email) {
+    if(redisUtil.hasKey(EMAIL_SEND_THROTTLE + email)) {
+      throw new ThrottleException();
+    }
+
     String emailVerificationToken = UUID.randomUUID().toString();
+    redisUtil.set(EMAIL_SEND_THROTTLE + email, email, 1L, TimeUnit.MINUTES);
     redisUtil.set(getEmailKey(emailVerificationToken), email, 30L, TimeUnit.MINUTES);
 
     return emailVerificationToken;
@@ -70,6 +78,10 @@ public class AuthServiceImpl implements AuthService {
 
   // SMS 인증 생성
   private String createSMSVerification(String tel) {
+    if(redisUtil.hasKey(SMS_SEND_THROTTLE + tel)){
+      throw new ThrottleException();
+    }
+    redisUtil.set(SMS_SEND_THROTTLE + tel, tel, 3L, TimeUnit.MINUTES);
     SecureRandom random = new SecureRandom();
     String smsVerificationToken = String.valueOf(100000 + random.nextInt(900000));
     redisUtil.set(getSMSKey(smsVerificationToken), tel, 3L, TimeUnit.MINUTES);
