@@ -47,4 +47,13 @@ public interface AuthControllerSpec {
             @ApiResponse(responseCode = "400", description = "로그아웃 실패")
     })
     ResponseEntity<?> logout();
+
+    @Operation(summary = "회원가입 전 인증메일 발송", description = "입력받은 이메일로 인증 링크를 발송합니다.")
+    @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "인증 문자 발송 성공"),
+      @ApiResponse(responseCode = "400", description = "문자 발송 실패")
+    })
+    ResponseEntity<?> sendSms(@RequestBody MemberSendSmsRequest memberSendSmsRequest);
+
+    ResponseEntity<?> verifiedSms(@RequestBody MemberSmsVerifiedRequest memberSmsVerifiedRequest);
 }

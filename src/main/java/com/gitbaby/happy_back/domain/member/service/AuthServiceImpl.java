@@ -2,6 +2,7 @@ package com.gitbaby.happy_back.domain.member.service;
 
 import com.gitbaby.happy_back.domain.common.service.MailService;
 import com.gitbaby.happy_back.domain.common.util.RedisUtil;
+import com.gitbaby.happy_back.domain.common.util.SmsUtil;
 import com.gitbaby.happy_back.domain.member.dto.*;
 import com.gitbaby.happy_back.domain.member.entity.Member;
 import com.gitbaby.happy_back.domain.member.exception.*;
@@ -15,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -29,9 +31,11 @@ public class AuthServiceImpl implements AuthService {
   private final MailService mailService;
 
   private static final String EMAIL_VERIFICATION_PREFIX = "EMAIL_VERIFICATION_TOKEN:";
+  private static final String SMS_VERIFICATION_PREFIX = "SMS_VERIFICATION_TOKEN:";
   private final MemberMapper memberMapper;
   private final JwtUtil jwtUtil;
   private final CookieUtil cookieUtil;
+  private final SmsUtil smsUtil;
 
   // 이메일 인증용 키 생성
   private String getEmailKey(String emailVerificationToken) {
@@ -59,6 +63,34 @@ public class AuthServiceImpl implements AuthService {
   // 이메일 인증 삭제
   private boolean deleteEmailVerification(String emailVerificationToken) {
     return redisUtil.delete(getEmailKey(emailVerificationToken));
+  }
+
+  // SMS 인증용 키 생성
+  private String getSMSKey(String smsVerificationToken) {
+    return SMS_VERIFICATION_PREFIX + smsVerificationToken;
+  }
+
+  // SMS 인증 생성
+  private String createSMSVerification(String tel) {
+    SecureRandom random = new SecureRandom();
+    String smsVerificationToken = String.valueOf(100000 + random.nextInt(900000));
+    redisUtil.set(getSMSKey(smsVerificationToken), tel, 3L, TimeUnit.MINUTES);
+    return smsVerificationToken;
+  }
+
+  // SMS 인증 키 확인
+  private boolean hasSMSVerification(String smsVerificationToken) {
+    return redisUtil.hasKey(getSMSKey(smsVerificationToken));
+  }
+
+  // SMS 인증 값 검증
+  private String readSMSVerification(String smsVerificationToken) {
+    return redisUtil.get(getSMSKey(smsVerificationToken));
+  }
+
+  // SMS 인증 삭제
+  private boolean deleteSMSVerification(String smsVerificationToken) {
+    return redisUtil.delete(getSMSKey(smsVerificationToken));
   }
 
   // 회원가입 전 인증 메일 전송
@@ -143,5 +175,39 @@ public class AuthServiceImpl implements AuthService {
   @Override
   public List<ResponseCookie> logout() {
     return cookieUtil.createLogoutCookies();
+  }
+
+
+  @Override
+  public void smsVerification(MemberSendSmsRequest memberSendSmsRequest) {
+    String TelVerificationToken = createSMSVerification(memberSendSmsRequest.getTel());
+    smsUtil.sendSms(memberSendSmsRequest.getTel(), TelVerificationToken);
+  }
+
+  @Override
+  public void smsVerified(MemberSmsVerifiedRequest memberSmsVerifiedRequest) {
+    // 인증 시간 만료
+    if(!hasSMSVerification(memberSmsVerifiedRequest.getCode())) {
+      throw new TelCodeMismatchException();
+    }
+
+    String tel = readSMSVerification(memberSmsVerifiedRequest.getCode());
+
+    // 인증 실패
+    if(!tel.equals(memberSmsVerifiedRequest.getTel())){
+      throw new TelCodeMismatchException();
+    }
+    deleteSMSVerification(memberSmsVerifiedRequest.getCode());
+  }
+
+  @Override
+  public MemberSmsVerifiedResponse signupSmsVerified(MemberSmsVerifiedRequest memberSmsVerifiedRequest) {
+    smsVerified(memberSmsVerifiedRequest);
+
+    if (memberService.hasTel(memberSmsVerifiedRequest.getTel())) {
+      return new MemberSmsVerifiedResponse(memberService.getMemberByTel(memberSmsVerifiedRequest.getTel()).getEmail());
+    }
+
+    return null;
   }
 }

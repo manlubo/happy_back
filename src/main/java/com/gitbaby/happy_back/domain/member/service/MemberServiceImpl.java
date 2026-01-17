@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +30,18 @@ public class MemberServiceImpl implements MemberService {
   // 회원가입
   @Override
   @WithSpan
+  @Transactional
   public MemberSignupResponse signup(MemberSignupRequest memberSignupRequest) {
+    // 기존 휴대폰으로 새로운 유저가 가입 시, 기존 회원의 휴대폰 번호를 삭제
+    if (memberRepository.existsByTel(memberSignupRequest.getTel())) {
+      Member telMember = getMemberByTel(memberSignupRequest.getTel());
+      telMember.setTel(null);
+
+      memberRepository.save(telMember);
+      memberRepository.flush();
+    }
+
+
     Member member = memberMapper.toEntity(memberSignupRequest);
 
     switch (memberSignupRequest.getRole()) {
@@ -60,10 +72,19 @@ public class MemberServiceImpl implements MemberService {
     if (isEmail(username)) {
       member = memberRepository.findByEmail(username).orElseThrow(UsernameNotFoundExceprion::new);
     } else {
-      member = memberRepository.findByTel(username).orElseThrow(UsernameNotFoundExceprion::new);
+      member = getMemberByTel(username);
     }
 
     return member;
   }
 
+  @Override
+  public boolean hasTel(String tel) {
+    return memberRepository.existsByTel(tel);
+  }
+
+  @Override
+  public Member getMemberByTel(String tel) {
+    return memberRepository.findByTel(tel).orElseThrow(UsernameNotFoundExceprion::new);
+  }
 }

@@ -16,4 +16,8 @@ public interface AuthService {
   MemberCookieWithLoginResponse login(MemberLoginRequest memberLoginRequest);
 
   List<ResponseCookie> logout();
+
+  void smsVerification(MemberSendSmsRequest memberSendSmsRequest);
+  void smsVerified(MemberSmsVerifiedRequest memberSmsVerifiedRequest);
+  MemberSmsVerifiedResponse signupSmsVerified(MemberSmsVerifiedRequest memberSmsVerifiedRequest);
 }
